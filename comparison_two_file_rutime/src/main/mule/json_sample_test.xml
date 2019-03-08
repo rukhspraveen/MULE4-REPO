@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="904d3066-4cf4-4459-96f0-41f54944ba46" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="160c934f-7c71-470f-9698-fe039c6f4776" >
+		<file:connection workingDir="C:/Users/rpraveen/Documents/Mule 4 training workspace/json_sample_test/src/main/resources" />
+	</file:config>
+	<flow name="json_sample_testFlow" doc:id="f1918783-6e2c-4fa4-af9d-4a560edec48a" >
+		<http:listener doc:name="Listener" doc:id="cc71a93e-f7eb-4b96-9ce2-016159aa0cdf" config-ref="HTTP_Listener_config" path="/json"/>
+		<set-variable value="#[message.payload]" doc:name="Set Variable" doc:id="3e9dd205-e5aa-4b17-8df8-6c3efc4730b1" variableName="Out"/>
+		<file:read doc:name="Read" doc:id="46da7a29-7405-46bd-9099-b3475a0dc97d" config-ref="File_Config" path="input_json_sample.json"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="426a8131-c747-4bb5-8125-3344c25f5012" />
+		<logger level="INFO" doc:name="Logger" doc:id="c452881d-b7d8-4a8d-bd7e-3c98d9c27de5" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="d97b6de2-dc9b-49af-9873-884fcbde56a4" >
+			<when expression="#[payload == vars.Out]">
+				<set-payload value='#["success"]' doc:name="Set Payload" doc:id="16dc4dee-2e2a-48a0-9d00-96b52e50ec43" />
+			</when>
+			<otherwise >
+				<set-payload value='#["failure"]' doc:name="Set Payload" doc:id="e3186ad0-153a-4cc4-9c71-a5b1c72147f3" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
