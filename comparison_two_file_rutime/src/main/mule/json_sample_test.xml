@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="160c934f-7c71-470f-9698-fe039c6f4776" >
-		<file:connection workingDir="C:/Users/rpraveen/Documents/Mule 4 training workspace/json_sample_test/src/main/resources" />
+		<file:connection workingDir="C:\Users\rpraveen\git\Mule4\comparison_two_file_rutime\src\main\resources" />
 	</file:config>
 	<flow name="json_sample_testFlow" doc:id="f1918783-6e2c-4fa4-af9d-4a560edec48a" >
 		<http:listener doc:name="Listener" doc:id="cc71a93e-f7eb-4b96-9ce2-016159aa0cdf" config-ref="HTTP_Listener_config" path="/json"/>

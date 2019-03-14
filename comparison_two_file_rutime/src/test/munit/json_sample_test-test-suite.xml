@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="json_sample_test-test-suite.xml" />
+	<munit:test name="json_sample_test-test-suite-json_sample_testFlowTest" description="Test" doc:id="a3aa953c-c483-4c62-91b5-44de2870a169" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="94bd90e9-870d-408f-802b-d19d623135ff" processor="file:read" >
+				<munit-tools:then-return >
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event>
+  <munit:payload value="#[MunitTools::getResourceAsString('sample_data/input_json_sample.json')]"/>
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to json_sample_testFlow" doc:id="572be1dd-24f9-46ca-a4fd-c39e83ad9cb8" name="json_sample_testFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="f335e2f9-8f76-422b-931b-ad5be543a548" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

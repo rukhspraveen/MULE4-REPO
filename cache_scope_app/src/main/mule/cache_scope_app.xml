@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="66c20422-1abb-4c85-9777-5d77b41294cc" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="60652593-0a06-45e9-95e8-a4aa2003f22a" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Miracle@1" database="sakila" />
+	</db:config>
+	<flow name="cache_scope_appFlow" doc:id="faf4fe39-3f8f-4845-846e-ce3898dc99ca" >
+		<http:listener doc:name="Listener" doc:id="94b014a4-c35c-4aa4-824a-330a0755e219" config-ref="HTTP_Listener_config" path="/cache"/>
+		<logger level="INFO" doc:name="Logger" doc:id="cb75311c-8927-4120-aa6c-d32435a497cc" message="#[attributes.queryParams.actor_id]"/>
+		<ee:cache doc:name="Cache" doc:id="1647a693-fde8-4eef-85dd-076bdc373fbe" >
+			<logger level="INFO" doc:name="Logger" doc:id="b6c26df2-f37c-42a3-ad4d-89181abbf4cb" message="before calling"/>
+			<db:select doc:name="Select" doc:id="d00fa1a1-a259-4098-bc2a-478fc9c71718" config-ref="Database_Config">
+				<db:sql >select * from actor  where actor_id= :id</db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParam.actor_id
+}]]]></db:input-parameters>
+			</db:select>
+			<logger level="INFO" doc:name="Logger" doc:id="f5c49f56-97fb-48a2-9404-0e34b484faff" message="after calling"/>
+		</ee:cache>
+		<ee:transform doc:name="Transform Message" doc:id="cb4f6b57-4d83-428a-8ccd-21d27fb164c6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8423d914-4b6c-4827-a8ab-5c6bf345e0aa" />
+	</flow>
+</mule>
