@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="5a1f741e-2cc7-4c40-8792-634e4cfed753" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="1e75e34b-ec0c-43d4-9a72-fe2b300e9e4b" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Miracle@1" database="rukhs" />
+	
+</db:config>
+	<flow name="Employees" doc:id="31ed3b52-e8c6-4824-af24-5a714da9c58a" >
+		<http:listener doc:name="Listener" doc:id="700d46d6-0ea4-4b16-99f0-442612f74fae" config-ref="HTTP_Listener_config1" path="employees" allowedMethods="GET"/>
+		<db:select doc:name="Select" doc:id="d7fd3f83-5cf0-42b1-8238-42a1d0189af6" config-ref="Database_Config">
+			<db:sql >select * from persons</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="b0e51968-bd6d-4fe3-9907-1d6c088af889" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Employees: payload map ( payload01 , indexOfPayload01 ) -> {
+		empID: payload01.PERSONID as String,
+		empName: (payload01.LASTNAME default "") ++(", ") ++(payload01.FIRSTNAME default ""),
+		address: (payload01.ADDRESS default "")++(" , City->")++(payload01.CITY default ""),
+		DOB: payload01.DOB default ""
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="6a8a4122-d35e-428a-944c-2eb59ad0d081" />
+	</flow>
+	<flow name="EmployeeByID" doc:id="71210c0d-4a80-44fc-894b-b42064895f3f" >
+		<http:listener doc:name="Listener" doc:id="63066f52-69cf-40c9-b93e-79f8274f6513" config-ref="HTTP_Listener_config1" path="employees/{id}" allowedMethods="GET"/>
+		<db:select doc:name="Select" doc:id="1adad568-3452-4e89-861b-2e9532a671a8" config-ref="Database_Config" >
+			<db:sql >select * from persons where PERSONID=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{"id":attributes.uriParams.id}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="567724bb-1c98-46f8-bee2-7e3894072cab" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Employees: payload map ( payload01 , indexOfPayload01 ) -> {
+		empID: payload01.PERSONID as String,
+		empName: (payload01.LASTNAME default "") ++(", ") ++(payload01.FIRSTNAME default ""),
+		address: (payload01.ADDRESS default "")++(" , City->")++(payload01.CITY default ""),
+		DOB: payload01.DOB default ""
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="0c05e326-6437-49a1-8ddb-4dd1605907a2" />
+	</flow>
+	<flow name="AddEmployee" doc:id="4ec45097-645c-45f4-8679-d430440bf3ee" >
+		<http:listener doc:name="Listener" doc:id="71d25610-4d6f-4d45-8c34-68302f464776" config-ref="HTTP_Listener_config1" path="/employees" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="6a5a5d16-1a7e-4cb9-86b6-647a80cac2a4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="response" ><![CDATA[%dw 2.0
+output application/xml
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="27a94f04-02cb-4233-96b7-40019b803f7f" config-ref="Database_Config">
+			<db:sql >insert into PERSONS (LASTNAME,FIRSTNAME,ADDRESS,CITY,DOB) values (:lastName,:firstName,:Address,:City,:DOB)</db:sql>
+			<db:input-parameters ><![CDATA[#[{"lastName": payload.Employee.LastName,
+	"firstName": payload.Employee.FirstName,
+	"Address":payload.Employee.address,
+	"City":payload.Employee.City,
+	"DOB":payload.Employee.DOB
+}]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value='#[output application/json
+---
+"No of rows inserted is": payload.affectedRows as String]' doc:name="Set Payload" doc:id="9e4ea3cb-ff27-4594-af6e-8690aecd8ace" />
+		<logger level="INFO" doc:name="Logger" doc:id="cda391f9-0acd-4673-acf7-5637d1805721" message="#[vars.response]"/>
+	
+</flow>
+
+</mule>

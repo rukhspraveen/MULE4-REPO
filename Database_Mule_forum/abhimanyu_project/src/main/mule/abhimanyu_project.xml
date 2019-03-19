@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9e92e04f-8516-4d88-984b-2fb75e76495b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="abhimanyu_projectFlow" doc:id="76188e4e-7eda-44aa-bce7-045ea2418a2e" >
+		<http:listener doc:name="Listener" doc:id="f00a2cbc-57fe-445e-9b97-58a2f7241430" config-ref="HTTP_Listener_config" path="/abhi"/>
+		<ee:transform doc:name="Transform Message" doc:id="59cdb132-036e-49c0-aeb5-20dc863aff63" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+ 
+ pickupFirstName: payload.dataset.pipelineSession.values.order_collection.billing_address.first_name default null,
+ pickupLastName: payload.dataset.pipelineSession.values.order_collection.billing_address.last_name default null,
+ pickupPhone: payload.dataset.pipelineSession.values.order_collection.billing_address.phone default null,
+ pickupStoreName: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.store_name default null,
+ pickupStoreAddress1: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.address_line_1 default null,
+ pickupStoreAddress2: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.address_line_2 default null,
+ pickupStoreCity: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.city default null,
+ pickupStoreState: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.state default null,
+ pickupStoreZipcode: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.zip_code default null,
+ pickupStorePhone: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.phone default null,
+ pickupStoreId: payload.dataset.pipelineSession.values.order_collection.pickup_store_address.store_id default null,
+ pickupDate: payload.dataset.pipelineSession.values.order_collection.pickup_date_formatted,
+ pickupTime: payload.dataset.pipelineSession.values.order_collection.pickup_time_formatted,
+ pickupInstructions: payload.dataset.pipelineSession.values.order_collection.pickup_message,
+ specialItemPickupDate: payload.dataset.pipelineSession.values.order_collection.specialitem_pickup_date,
+ specialItemPickupTime: payload.dataset.pipelineSession.values.order_collection.specialitem_pickup_time,
+ specialItemPickupInstructions: payload.dataset.pipelineSession.values.order_collection.specialitem_pickup_instructions,
+ orderPickupInstructions: payload.dataset.pipelineSession.values.order_collection.complete_order_by_message,
+ orderUUID: payload.dataset.pipelineSession.values.order_collection.order_collection_uuid,
+ 
+
+order_items: payload.dataset.pipelineSession.values.order_collection.order_items map {
+             items: orderitem..items map {
+                                (itemUUID: item.item_uuid),
+								(productId: item.product_id),
+								productName: item.name,
+								productOverlineDescription: item.overline_description,
+								productImage: item.main_image.file_url,
+								itemNotes: item.user_item_notes,
+								quantity: item.item_quantity,
+								productPricePerUnit: item.item_unit_display_price,
+								productUnit: item.unit_of_measure,
+								productDisplayStrikeThroughCalc: item.item_display_strike_through_calc,
+								productDiscountedPricePerUnit: item.item_display_strike_through_price,
+								producttotalPrice: item.direct_order_item_estimated_total.amountInDollars,
+								productPricePerUnitNotes: item.item_price_note,
+								parentCategoryId: item.parent_category_id,
+								categoryId: item.category_id,
+								subCategoryId: item.sub_category_id
+							} 
+						},
+    
+      
+ specialItems: {
+(payload.dataset.pipelineSession.values.order_collection.order_items."special items".items map {
+occassion: $.item_configurations_map.cake_occasion,
+cakeFlavor: $.item_configurations_map.flavor,
+icingType: $.item_configurations_map.icing_type,
+icingFlavor: $.item_configurations_map.icing_flavor,
+icingColor: $.item_configurations_map.icing_color,
+customMessage: $.item_configurations_map.inscription
+})
+},
+
+ pickupSubTotal: payload.dataset.pipelineSession.values.order_collection.grand_store_pickup_items_total.amountInDollars,
+ serviceFee: payload.dataset.pipelineSession.values.order_collection.direct_order_picking_fees_grand_total.amountInDollars,
+ serviceFeeDiscount: payload.dataset.pipelineSession.values.order_collection.direct_order_picking_fee_discounts_grand_total.amountInDollars,
+ estimatedTotal: payload.dataset.pipelineSession.values.order_collection.grand_store_pickup_total.amountInDollars,
+ pickupPromoMessage: payload.dataset.pipelineSession.values.picking_fee_threshold_message,
+ pickupPromoCode: payload.dataset.pipelineSession.values.order_collection.promo_code,
+ pickupPromoDiscount: payload.dataset.pipelineSession.values.order_collection.grand_orders_discount_total.amountInDollars,
+ multipleOrderTypeFlag: payload.dataset.pipelineSession.values.order_collection.multiple_order_type,
+ ageRestrictionFlag: payload.dataset.pipelineSession.values.order_collection.order_items[0].department.items[0].age_required,
+ 
+ messages: {
+  descriptionMap: {
+   "com.fry.starter.webservice.engine.catalog.response.v5_3.MessagesImpl_v5_3": payload.messages.descriptionMap."com.fry.starter.webservice.engine.catalog.response.v5_3.MessagesImpl_v5_3" map ( comfrystarterwebserviceenginecatalogresponsev53MessagesImplv53 , indexOfComfrystarterwebserviceenginecatalogresponsev53MessagesImplv53 ) -> comfrystarterwebserviceenginecatalogresponsev53MessagesImplv53
+  },
+  status: payload.messages.status,
+  description: payload.messages.description map ( description , indexOfDescription ) -> description,
+  messageCodes: {
+   OC00200: payload.messages.messageCodes.OC00200
+  }
+ },
+ parameters: payload.parameters map ( parameter , indexOfParameter ) -> parameter
+}
+     ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1f017f97-a56b-4439-b9e3-bcbf3537e3bc" message="#[payload]"/>
+	</flow>
+</mule>
