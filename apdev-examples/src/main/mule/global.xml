@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="a59b9c12-e81a-420d-ae2d-d606c23cd655" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="33366274-d0e7-4089-a35d-e60d6f349b6b" >
+		<http:request-connection host="localhost" port="8084" connectionIdleTimeout="300000" />
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config3" doc:name="HTTP Listener config" doc:id="1df1473a-a28d-4ccd-a4a5-be341c3da3ef" >
+		<http:listener-connection host="0.0.0.0" port="8084" />
+	</http:listener-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="6cba5299-cf25-4d7b-b819-28def6295dcd" >
+		<vm:queues >
+			<vm:queue queueName="goodbye" />
+		</vm:queues>
+	</vm:config>
+	
+	
+		<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e6ddca9b-86e6-49f9-907f-ccfe59bcc504" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="6530d486-5ab3-47e7-883e-5214324c0ecc">
+		<http:request-connection host="localhost" port="8088" connectionIdleTimeout="300000" />
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="62f3a31f-2c8b-4942-87a2-b7e2f16be982" >
+		<http:listener-connection host="0.0.0.0" port="8088" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="b17b911f-4653-4a50-b295-b26f72f19201" file="config.yaml" />
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="75f6cd68-1ca9-4e62-ab18-af701039a825" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="258fec09-bb46-4433-9de3-3a9bdb79c5dc" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration />
+		</jms:active-mq-connection>
+	</jms:config>
+	
+	
+	
+	
+</mule>

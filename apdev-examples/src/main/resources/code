@@ -1,0 +1,47 @@
+<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="769d6d3b-2f1d-4e72-ba9f-3424132793c5" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.token}" />
+	</salesforce:sfdc-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="5f15cec7-580d-4724-94f3-3b35aed59a02" >
+		<file:connection workingDir="D:\Rukhsar\xz_MULE4\Mule $\MUFundamentals4.1_studentFiles_22sept2018\resources" />
+	</file:config>
+
+ <flow name="accountsFlow" doc:id="2845c1eb-78d5-40da-a036-cdceeaf2cf7d" >
+		<http:listener doc:name="Listener" doc:id="08b60454-4b28-440a-9448-2c770d24ea31" config-ref="HTTP_Listener_config" path="/sfdc"/>
+		<salesforce:query doc:name="Query" doc:id="6767107d-692a-4154-9bf2-8ec72bee3d4b" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >select Name,LastModifiedDate,BillingPostalCode from Account</salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="049c6edc-fbce-4ade-af1e-bc07cfb474de" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow> 
+	 <flow name="getCSVaccounts" doc:id="d216a4c1-6e2a-492e-abd5-3976b5280b0b" >
+		<file:listener doc:name="On New or Updated File" doc:id="9335d75c-f921-46d2-956d-3deb6620e3ca" config-ref="File_Config" timeBetweenSizeCheckUnit="MILLISECONDS" moveToDirectory="output" directory="input" renameTo='#[attributes.fileName ++ ".backup"]'>
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+			<file:matcher filenamePattern="*.csv" />
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="ec475615-2c7e-428d-9868-4ab5244154ad" message="#[payload]"/>
+	</flow>
+ <flow name="syncDBaccountsToCSV" doc:id="9fe5a2d4-6117-4bd8-ba5f-66b02fb393cb" >
+		<db:listener table="accounts" doc:name="On Table Row" doc:id="deceb0f6-bdf5-43b9-9252-5a4083a8fca6" config-ref="Database_Config1" watermarkColumn="accountID">
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</db:listener>
+		<ee:transform doc:name="java to csv" doc:id="60bd6a7d-663d-43ad-993b-fcbc1f534599" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv header=false
+---
+[payload]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="account.csv" doc:id="2183aa7a-4f87-49eb-b304-5018acf243b0" config-ref="File_Config" path="output/DBacoount.csv" mode="APPEND"/>
+		<logger level="INFO" doc:name="payload" doc:id="c17f1715-d317-45f0-b0eb-28a8bec4474a" />
+	</flow> 

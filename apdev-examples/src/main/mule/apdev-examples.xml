@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+	<flow name="apdev-examplesFlow" doc:id="7f93f324-95b5-4780-8c0c-37d8a4406d00" >
+		<http:listener doc:name="GET/ hello" doc:id="9608a0f8-5695-4df7-9277-33561f76fcb7" path="/hello" config-ref="HTTP_Listener_config">
+			<http:response reasonPhrase="Success">
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"name" : attributes.queryParams.fname,
+	Name : vars.firstName
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<set-variable value="#[attributes.queryParams.fname]" doc:name="Set Variable" doc:id="e97f436a-ca01-43b2-8c87-b0c0eedeb30d" variableName="firstName"/>
+		<set-payload value='Hello' doc:name="Hello" doc:id="3ae7c73f-6863-4678-8279-0208b461605e" />
+		<http:request method="GET" doc:name="GET/Goodbye" doc:id="810eb892-b012-4611-970e-d71b4d679b3a" path="/goodbye" config-ref="HTTP_Request_configuration">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"fullname" : attributes.queryParams.fname
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="6e4608f7-4bf3-4c87-8a24-773a78d429be" message="#['\nMessage: ' ++ payload]"/>
+	</flow>
+	<flow name="apdev-examplesFlow1" doc:id="12246f80-7b3e-4d57-a038-946575fdb4cf" >
+		<http:listener doc:name="GET/Goodbye" doc:id="ac9c41e0-b4f3-45cc-860f-d52e8e4cb4b6" path="/goodbye" config-ref="HTTP_Listener_config1"/>
+		<set-payload value="#[upper('Goodbye') ++ ' ' ++ (attributes.queryParams.fullname default 'Maxine')]" doc:name="Set Payload" doc:id="93e65979-593d-4b60-898c-8b12f8a231d5" />
+		<logger level="INFO" doc:name="Logger" doc:id="9b85e76b-697d-4925-bb5a-955b27d4d41d" message="#[attributes.queryParams.fullName]"/>
+	</flow>
+</mule>

@@ -1,0 +1,15 @@
+db:
+  host: "mudb.learn.mulesoft.com"
+  port: "3306"
+  user: "mule"
+  password: "mule"
+  database: "training"
+
+
+http:
+  port: "8081"
+  
+sfdc:
+  username: "PraveenRukhsar@mss.com"
+  password: "Rabia@1234"
+  token:    "v4UIEP8HBWDRoJc6xYfGiYj4" 
