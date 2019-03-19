@@ -1,0 +1,26 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/e1ba3f8d-95d8-4b42-840f-91f5f119feff/ # 
+version: v1
+# baseUri: http://cloude-sample-app.us-e2.cloudhub.io/api/
+title: Hello world # required title
+
+/helloworld/{ID}: # optional resource
+  get: # HTTP method declaration
+    responses: # declare a response
+      200: # HTTP status code
+        body: # declare content of response
+          application/json: # media type
+            type: | # structural definition of a response (schema or type)
+              {
+                "title": "Hello world Response",
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            example: | # example of how a response looks
+              {
+                "message": "Hello world"
+              }
