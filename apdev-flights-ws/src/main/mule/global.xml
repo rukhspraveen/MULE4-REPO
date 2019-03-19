@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:american-flights-api="http://www.mulesoft.org/schema/mule/american-flights-api"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/american-flights-api http://www.mulesoft.org/schema/mule/american-flights-api/current/mule-american-flights-api.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2dd58392-dfcd-4cdf-ae98-f68e3bc6e486" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="08f220b3-78b6-49f6-8913-c496f22a2615" file="config.yaml" />
+	<american-flights-api:config name="American_Flights_API_Config" doc:name="American Flights API Config" doc:id="e2883d13-7d66-4cbd-a521-82f475845d04" property_host="${american.host}" property_port="${american.port}" property_protocol="${american.protocol}" property_basePath="/${american.basepath}" />
+	<configuration doc:name="Configuration" doc:id="ad2814f6-aa1e-41b8-a9cc-8316ac12a6ad" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="ba0b9b46-8a0c-4603-af1e-e8d79465ac8f" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3b6c0e08-0291-4c11-a008-0e67ad3b5c25" type="APP:INVALID_DESTINATION ">
+				<ee:transform doc:name="Transform Message" doc:id="54fd1e19-1b80-4c7f-8a3b-9b8a3fed8d88" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+ { 
+ "message": error.description
+ 	
+ }]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus " doc:id="f0cf0ef3-8949-4b1d-ade7-e1f598f7938c" variableName="httpStatus "/>
+			</on-error-continue>
+			
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" type="WSC:CONNECTIVITY,WSC:INVALID_WSDL">
+			<ee:transform doc:name="Transform Message" doc:id="32b86bcd-7c6f-4930-a2a9-2f3f3074df29" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Data unavailable. Try later." ++ error.description
+	
+	} ]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-variable value="500" doc:name="httpStatus" doc:id="eb282a9b-689b-44c2-b965-4dd92aea5812" variableName="httpStatus"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="afe4412c-6dd7-48e8-80d2-96688f82fdd2" type="ANY" >
+			<ee:transform doc:name="Transform Message" doc:id="3bf02376-b988-4ea6-a37c-e9d2781dd51b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-variable value="500" doc:name="httpStatus" doc:id="7b3e5c20-bd1f-4829-a3d6-ebcc9bac0af7" variableName="httpStatus"/>
+		</on-error-continue>
+	</error-handler>
+</mule>

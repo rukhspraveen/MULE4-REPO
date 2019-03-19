@@ -1,0 +1,50 @@
+%dw 2.0
+output application/dw
+import dasherize from dw::core::Strings
+//var numseat=400
+//var numSeats = (x=400) -> x
+//type Currency = String {format: "###.00"}
+type Flight = Object {class: "com.mulesoft.training.Flight"}
+var numSeats = (planeType: String) ->
+if (planeType contains('737'))
+
+          150
+
+     else
+
+          300
+fun getNumSeats(planeType: String) =
+
+     if (planeType contains('737'))
+
+          150
+
+     else
+
+          300
+---
+using (flights=
+	
+	 payload..*return map (object,index) -> {
+	
+flight: object,
+destination: object.destination,
+//price: object.price,
+//price: object.price as Number,
+price: object.price as Number ,
+
+
+date: object.departureDate as Date {format: "yyyy/MM/dd"} as String {format: "MMM dd, yyyy"},//totalseat: numSeats()
+  
+  //totalSeats: numSeats(object.planeType as String),
+  totalSeats: getNumSeats(object.planeType as String),
+  //plane: object.planeType,
+  //plane: upper(object.planeType as String)
+ // planeType: upper(replace(object.planeType,/(Boing)/) with "Boeing"),
+  planeType: dasherize(replace(object.planeType,/(Boing)/) with "Boeing")
+    } as Flight
+)
+flights orderBy $.price
+orderBy $.price
+distinctBy $
+

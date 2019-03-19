@@ -1,0 +1,13 @@
+{
+  "sampleData": {
+    "d196c676-e036-4bc1-b8d1-6e1c00304563": {
+      "payload": "sample_data/unknown.dwl"
+    },
+    "ca565424-109d-416d-af18-d643d085eb46": {
+      "payload": "sample_data/listAllFlightsResponse.xml"
+    },
+    "3d6428d2-8d55-4031-9be0-ac8ae4cfb9a4": {
+      "payload": "sample_data/unknown_1.dwl"
+    }
+  }
+}
